@@ -21,8 +21,8 @@ docker run --rm -v /var/log/httpd:/var/log/httpd log_percentiles
 
 # 算法分析
 
+读取和解析日志的时间复杂度O(n)，空间复杂度O(n)
 ```kotlin
-    // 读取和解析日志的时间复杂度O(n)，空间复杂度O(n)
     for(file in ftw.iterator()) {
         if(file.isDirectory || !file.name.endsWith(".log")) {
             continue
@@ -33,10 +33,14 @@ docker run --rm -v /var/log/httpd:/var/log/httpd log_percentiles
             .toList()
         respTimes.addAll(newRespTimes)
     }
+```
 
-    // 默认排序是快速排序，时间复杂度O(n*log2n)，空间复杂度O(log2n)~O(n)之间
+kotlin中的默认排序算法是快速排序，时间复杂度O(n*log2n)，空间复杂度O(log2n)~O(n)之间
+```kotlin
     respTimes.sort()
 ```
+
+另外，当日志数据量过大时，会导致程序运行时间过久，应使用随机采样或者TDigest 算法等方式来进行优化。
 
 # 其他问题
 
