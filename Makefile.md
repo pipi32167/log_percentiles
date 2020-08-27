@@ -41,7 +41,9 @@ docker run --rm -v /var/log/httpd:/var/log/httpd log_percentiles
 # 其他问题
 
 
-这个项目使用Gradle来打包，需要先安装Gradle。
+这个项目使用Gradle来打包，需要先安装Gradle。也可以使用docker的Gradle镜像来编译。
+
+
 
 如果遇到Maven包下载得很慢的情况，请修改Maven镜像源：
 
