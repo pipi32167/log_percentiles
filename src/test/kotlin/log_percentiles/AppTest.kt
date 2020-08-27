@@ -8,7 +8,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
 import java.io.File
 
-fun genLog() {
+fun genLogs() {
     val f = File("src/test/resources/2018-12-10.log")
     val sb = StringBuilder()
     for (i in 0..100000-1) {

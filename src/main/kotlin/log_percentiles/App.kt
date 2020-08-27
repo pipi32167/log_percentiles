@@ -8,7 +8,7 @@ import java.io.File
 const val READ_API_REGEX = """([^\s]+)\s+([^\s]+)\s+\"GET\s+([^\s]+)\"\s+([^\s]+)\s+([^\s]+)"""
 const val MAX_RESPONSE_TIME = 24 * 60 * 60 * 1000
 
-fun calcPercentiles(dir: String): Array<Int> {
+fun calcPercentiles(dir: String, percentiles: Array<Double> = arrayOf(0.9, 0.95, 0.99)): List<Int> {
 
     val regex = READ_API_REGEX.toRegex()
     val f = File(dir)
@@ -31,16 +31,16 @@ fun calcPercentiles(dir: String): Array<Int> {
     // 时间复杂度O(n*log2n)，空间复杂度O(log2n)~O(n)
     respTimes.sort()
     // println("${respTimes.size}")
-    val perc_90 = respTimes[(respTimes.size * 0.9).toInt()]
-    val perc_95 = respTimes[(respTimes.size * 0.95).toInt()]
-    val perc_99 = respTimes[(respTimes.size * 0.99).toInt()]
-    return arrayOf(perc_90, perc_95, perc_99)
+    return percentiles.asSequence()
+        .map { respTimes[(respTimes.size * it).toInt()] }
+        .toList()
 }
 
 fun main() {
     val dir = "/var/log/httpd" 
+    val percentiles = arrayOf(0.9, 0.95, 0.99)
     // val dir = "src/test/resources" 
-    val (perc_90, perc_95, perc_99) = calcPercentiles(dir)
+    val (perc_90, perc_95, perc_99) = calcPercentiles(dir, percentiles)
     println("90% of requests return a response in ${perc_90} ms")
     println("95% of requests return a response in ${perc_95} ms")
     println("99% of requests return a response in ${perc_99} ms")
