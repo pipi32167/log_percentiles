@@ -5,28 +5,43 @@ package log_percentiles
 
 import kotlin.test.Test
 import kotlin.test.assertNotNull
+import kotlin.test.assertEquals
 import java.io.File
 
+fun genLog() {
+    val f = File("src/test/resources/2018-12-10.log")
+    val sb = StringBuilder()
+    for (i in 0..100000-1) {
+        sb.append("10.2.3.4 [2018/13/10:14:02:39] \"GET /api/my_articles?userId=3\" 200 ${i}\n")
+    }
+    f.writeText(sb.toString())
+} 
+
 class AppTest {
-    @Test fun testGetResponseTime() {
-
-        val log = """10.2.3.4 [2018/13/10:14:02:39] "GET /api/my_articles?userId=3" 200 1230"""
-        var respTimes = ArrayList<Int>()
-        getResponseTime(log, respTimes)
-        // println("respTimes: ${respTimes}")
-        assert(respTimes[0] == 1230)
-
+    @Test fun testLogRegex() {
+        val ipAddr = "10.2.3.4"
+        val date = "[2018/13/10:14:02:39]"
+        val httpMethod = "GET"
+        val url = "/api/my_articles?userId=3"
+        val status = 200
+        val responseTime = 100
+        val log = "${ipAddr} ${date} \"${httpMethod} ${url}\" ${status} ${responseTime}"
+        val match = READ_API_REGEX.toRegex().matchEntire(log)
+        assertNotNull(match)
+        assertEquals(match.destructured.component1(), ipAddr)
+        assertEquals(match.destructured.component2(), date)
+        assertEquals(match.destructured.component3(), url)
+        assertEquals(match.destructured.component4().toInt(), status)
+        assertEquals(match.destructured.component5().toInt(), responseTime)
     }
 
-    @Test fun testGetResponseTime2() {
+    @Test fun testCalcPercentiles() {
 
-        val f = File("src/test/resources/2018-13-10.log")
-        val respTimes = ArrayList<Int>()
-        for(log in f.readLines()) {
-            getResponseTime(log, respTimes)
-        }
-        // println("respTimes: ${respTimes}")
-        assert(respTimes[0] == 1230)
-        assert(respTimes[1] == 4630)
-    } 
+        val (perc_90, perc_95, perc_99) = calcPercentiles("src/test/resources")
+        println("${perc_90}, ${perc_95}, ${perc_99}")
+        assertEquals(perc_90, 90000)
+        assertEquals(perc_95, 95000)
+        assertEquals(perc_99, 99000)
+    }
+
 }

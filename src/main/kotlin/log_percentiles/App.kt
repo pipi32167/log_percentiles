@@ -8,47 +8,40 @@ import java.io.File
 const val READ_API_REGEX = """([^\s]+)\s+([^\s]+)\s+\"GET\s+([^\s]+)\"\s+([^\s]+)\s+([^\s]+)"""
 const val MAX_RESPONSE_TIME = 24 * 60 * 60 * 1000
 
-fun getResponseTime(log: String, respTimes: ArrayList<Int>, regex: Regex = READ_API_REGEX.toRegex()) {
-    
-    val match = regex.matchEntire(log)
-    if (match == null) {
-        return 
-    }
-    
-    try {
-        respTimes.add(match.destructured.component5().toInt())
-    }
-    catch(e: Exception) {
-        println("invalid log: ${log}, ${e.toString()}")
-    }
-}
-
-fun calcPercentiles(dir: String) {
+fun calcPercentiles(dir: String): Array<Int> {
 
     val regex = READ_API_REGEX.toRegex()
     val f = File(dir)
+    if(!f.isDirectory) {
+        throw Exception("${dir} is not a directory")
+    }
     val ftw = f.walk()
     val respTimes = ArrayList<Int>()
+    // 时间复杂度O(n)，空间复杂度O(n)
     for(file in ftw.iterator()) {
         if(file.isDirectory || !file.name.endsWith(".log")) {
             continue
         }
-        for(log in file.readLines()) {
-            getResponseTime(log, respTimes, regex)
-        }
+        val newRespTimes = file.readLines().asSequence()
+            .map { regex.matchEntire(it)?.destructured?.component5()?.toInt() }
+            .filterNotNull()
+            .toList()
+        respTimes.addAll(newRespTimes)
     }
-    
+    // 时间复杂度O(n*log2n)，空间复杂度O(log2n)~O(n)
     respTimes.sort()
     // println("${respTimes.size}")
-    val ms90 = respTimes[(respTimes.size * 0.9).toInt()]
-    val ms95 = respTimes[(respTimes.size * 0.95).toInt()]
-    val ms99 = respTimes[(respTimes.size * 0.99).toInt()]
-    println("90% of requests return a response in ${ms90} ms")
-    println("95% of requests return a response in ${ms95} ms")
-    println("99% of requests return a response in ${ms99} ms")
+    val perc_90 = respTimes[(respTimes.size * 0.9).toInt()]
+    val perc_95 = respTimes[(respTimes.size * 0.95).toInt()]
+    val perc_99 = respTimes[(respTimes.size * 0.99).toInt()]
+    return arrayOf(perc_90, perc_95, perc_99)
 }
 
-fun main(args: Array<String>) {
+fun main() {
     val dir = "/var/log/httpd" 
-    calcPercentiles(dir)
+    // val dir = "src/test/resources" 
+    val (perc_90, perc_95, perc_99) = calcPercentiles(dir)
+    println("90% of requests return a response in ${perc_90} ms")
+    println("95% of requests return a response in ${perc_95} ms")
+    println("99% of requests return a response in ${perc_99} ms")
 }
