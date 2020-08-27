@@ -28,7 +28,7 @@ fun calcPercentiles(dir: String, percentiles: Array<Double> = arrayOf(0.9, 0.95,
             .toList()
         respTimes.addAll(newRespTimes)
     }
-    // 时间复杂度O(n*log2n)，空间复杂度O(log2n)~O(n)
+    // 时间复杂度O(n*logn)，空间复杂度O(n*logn)
     respTimes.sort()
     // println("${respTimes.size}")
     return percentiles.asSequence()
