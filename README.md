@@ -35,7 +35,7 @@ docker run --rm -v /var/log/httpd:/var/log/httpd log_percentiles
     }
 ```
 
-kotlin中的默认排序算法是快速排序，时间复杂度O(n*log2n)，空间复杂度O(n*logn)
+kotlin中的默认排序算法是快速排序，时间复杂度O(n*logn)，空间复杂度O(n*logn)
 ```kotlin
     respTimes.sort()
 ```
